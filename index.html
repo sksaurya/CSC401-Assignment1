@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Stopwatch</title>
+  <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    // Put your React code here
+    const formatTime = (ms) => {
+      let seconds = (ms / 1000).toFixed(2);
+      let minutes = Math.floor(ms / 60000);
+      let hours = Math.floor(minutes / 60);
+
+      minutes = minutes % 60;
+      seconds = (seconds % 60).toString().padStart(5, '0');
+
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds}`;
+    };
+
+    const Stopwatch = () => {
+      const [time, setTime] = React.useState(0);
+      const [running, setRunning] = React.useState(false);
+      const [laps, setLaps] = React.useState([]);
+      const timerRef = React.useRef(null);
+
+      const startTimer = () => {
+        if (!running) {
+          setRunning(true);
+          const startTime = Date.now() - time;
+          timerRef.current = setInterval(() => {
+            setTime(Date.now() - startTime);
+          }, 10);
+        }
+      };
+
+      const stopTimer = () => {
+        clearInterval(timerRef.current);
+        setRunning(false);
+      };
+
+      const resetTimer = () => {
+        stopTimer();
+        setTime(0);
+        setLaps([]);
+      };
+
+      const recordLap = () => {
+        if (running) setLaps(prev => [...prev, time]);
+      };
+
+      return (
+        <div style={{ textAlign: 'center' }}>
+          <h1>Stopwatch</h1>
+          <h2>{formatTime(time)}</h2>
+          <div>
+            <button onClick={startTimer} disabled={running}>Start</button>
+            <button onClick={stopTimer} disabled={!running}>Stop</button>
+            <button onClick={recordLap} disabled={!running}>Lap</button>
+            <button onClick={resetTimer}>Reset</button>
+          </div>
+          {laps.length > 0 && (
+            <div>
+              <h3>Laps</h3>
+              <ul>
+                {laps.map((lap, index) => (
+                  <li key={index}>
+                    Lap {index + 1}: {formatTime(lap)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    ReactDOM.render(<Stopwatch />, document.getElementById('root'));
+  </script>
+</body>
+</html>
+
